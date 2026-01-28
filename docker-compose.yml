@@ -2,6 +2,9 @@ services:
   garrysmod-server:
     container_name: garrysmod-server
     build: .
+    volumes:
+      - ./garrysmod/cache:/data/garrysmod/cache  # Persistent Steam workshop downloads
+      - ./garrysmod/config:/data/config  # Server configuration files
     ports:
       - "27016:27016/udp"
       - "27016:27016/tcp"

@@ -2,15 +2,8 @@ FROM steamcmd/steamcmd AS steamcmd
 RUN steamcmd +force_install_dir /data +login anonymous +app_update 4020 validate +quit;
 
 FROM ubuntu:25.04
-
-RUN groupadd --system legendary \
-    && useradd  --system \
-       --home-dir /home/legendary \
-       --create-home \
-       --shell /usr/sbin/nologin \
-       --gid legendary \
-       legendary \
-    && chown -R legendary:legendary /home/legendary
+RUN groupmod -n legendary "$(getent group 1000 | cut -d: -f1)" \
+    && usermod -l legendary -d /home/legendary -m "$(getent passwd 1000 | cut -d: -f1)"
 COPY --chown=legendary:legendary --from=steamcmd /data /data
 
 RUN dpkg --add-architecture i386 \
@@ -21,6 +14,7 @@ RUN dpkg --add-architecture i386 \
 COPY entrypoint.sh /usr/local/bin
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+COPY --chown=legendary:legendary defaults/ /data/defaults/
 USER legendary
 WORKDIR /data
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
