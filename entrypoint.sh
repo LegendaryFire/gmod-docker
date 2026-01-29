@@ -21,28 +21,29 @@ has_permission() {
   [ -d "$1" ] && [ -w "$1" ] && [ -x "$1" ]
 }
 
-DEFAULT_DIR="/data/defaults"
-CONFIG_DIR="/data/config"
-CACHE_DIR="/data/garrysmod/cache"
+is_missing_or_empty() {
+  [ $# -ge 1 ] || return 0
+  [ -e "$1" ] || return 0
+  [ -f "$1" ] || return 1
+  grep -q '[^[:space:]]' -- "$1" && return 1
+  return 0
+}
 
-# Validate correct file permissions for the config and cache directories.
-if ! has_permission "$CONFIG_DIR"; then
-  error "Insufficient permissions to configuration directory $CONFIG_DIR. Exiting."
-  sleep 5
-  exit 1
+DEFAULT_SERVER_CFG="/data/defaults/server.cfg"
+if is_missing_or_empty "/data/garrysmod/cfg/server.cfg"; then
+  warn "The server.cfg file is missing or empty. Populating with image defaults."
+  cp "$DEFAULT_SERVER_CFG" "/data/garrysmod/cfg/server.cfg"
+else
+  echo "Using existing server.cfg file."
 fi
 
+CACHE_DIR="/data/garrysmod/cache"
+# Validate correct file permissions for the workshop cache directory.
 if ! has_permission "$CACHE_DIR"; then
   error "Insufficient permissions to cache directory $CACHE_DIR. Exiting."
   sleep 5
   exit 1
 fi
-
-# Create defaults, only if missing. Then link the server.cfg and users.txt to their corresponding paths.
-[ -f "$CONFIG_DIR/server.cfg" ] || cp "$DEFAULT_DIR/server.cfg" "$CONFIG_DIR/server.cfg"
-[ -f "$CONFIG_DIR/users.txt"  ] || cp "$DEFAULT_DIR/users.txt"  "$CONFIG_DIR/users.txt"
-ln -sf "$CONFIG_DIR/server.cfg" /data/garrysmod/cfg/server.cfg
-ln -sf "$CONFIG_DIR/users.txt"  /data/garrysmod/settings/users.txt
 
 # Set default environment variable values.
 PORT="${PORT:-27015}"

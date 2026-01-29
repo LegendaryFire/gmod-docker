@@ -14,7 +14,8 @@ RUN dpkg --add-architecture i386 \
 COPY entrypoint.sh /usr/local/bin
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-COPY --chown=legendary:legendary defaults/ /data/defaults/
 USER legendary
+RUN mkdir -p /data/garrysmod/cache
+COPY server.cfg /data/defaults/server.cfg
 WORKDIR /data
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
