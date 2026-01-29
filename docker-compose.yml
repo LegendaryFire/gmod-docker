@@ -10,5 +10,5 @@ services:
       - "27016:27016/tcp"
     stdin_open: true
     tty: true
-    env_file: ./.env
+    env_file: .env
     restart: unless-stopped
